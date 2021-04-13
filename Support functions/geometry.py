@@ -96,7 +96,6 @@ def node_in_polygon(node: Node.Node, polygon: Polygon.Polygon) -> bool:
     :param polygon:
     :return:
     """
-    # todo this function has issue, need rewrite
     # determine if node on polygon
 
     # create 射线

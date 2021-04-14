@@ -6,6 +6,11 @@ import Polygon
 import Vertex
 
 
+def intersect_polygons(polygon1:Polygon,polygon2:Polygon)->bool:
+    """
+
+    """
+
 def cross_product(list1: list, list2: list) -> int:
     result = list1[0] * list2[1] - list1[1] * list2[0]
     return result

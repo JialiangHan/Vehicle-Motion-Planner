@@ -16,4 +16,4 @@ class A_star():
         self.open_list = heapq.heapify([])
         self.close_list = []
 
-    def generate_grid_map(self):
+

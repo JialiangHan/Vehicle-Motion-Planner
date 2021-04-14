@@ -14,6 +14,10 @@ class Node_2D:
         self.in_open_list = False
         self.in_close_list = False
         self.discover = False
+        self.index = -1
+
+    def set_index(self, map_width):
+        self.index = self.x + self.y * map_width
 
     def get_f_value(self):
         return self.cost_so_far + self.heuristic

@@ -5,7 +5,7 @@ import distance
 
 
 class Node_2D:
-    def __init__(self, x: float, y: float, cost_so_far=None, heuristic=None, predecessor=None):
+    def __init__(self, x: int, y: int, cost_so_far=None, heuristic=None, predecessor=None):
         self.x = x
         self.y = y
         self.cost_so_far = cost_so_far

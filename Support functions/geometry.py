@@ -6,10 +6,29 @@ import Polygon
 import Vertex
 
 
-def intersect_polygons(polygon1:Polygon,polygon2:Polygon)->bool:
+def intersect_polygons(polygon1: Polygon, polygon2: Polygon) -> bool:
     """
+    this function return True or False: if two polygons are intersected
+    True:intersect
+    False: not intersect
+    """
+    for edge in polygon1.edge_list:
+        if intersect_edge_polygon(edge, polygon2):
+            return True
+    return False
 
+
+def intersect_edge_polygon(edge: Edge, polygon: Polygon) -> bool:
     """
+    this function return True or False: if edge and polygon are intersected
+    True:intersect
+    False: not intersect
+    """
+    for edge1 in polygon.edge_list:
+        if intersect(edge, edge1):
+            return True
+    return False
+
 
 def cross_product(list1: list, list2: list) -> int:
     result = list1[0] * list2[1] - list1[1] * list2[0]
@@ -17,6 +36,11 @@ def cross_product(list1: list, list2: list) -> int:
 
 
 def intersect(edge1: Edge.Edge, edge2: Edge.Edge) -> bool:
+    """
+    determine if two edges are intersect with each other:
+    True: intersect
+    False: not intersect
+    """
     x_max_1 = max(edge1.start.x, edge1.end.x)
     x_min_1 = min(edge1.start.x, edge1.end.x)
     y_max_1 = max(edge1.start.y, edge1.end.y)

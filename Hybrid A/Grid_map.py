@@ -5,7 +5,6 @@ from Computational_Geometry import Convex_hull
 import geometry,math
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
-from matplotlib.collections import PatchCollection
 
 
 class Grid_map:

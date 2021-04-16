@@ -8,6 +8,7 @@ import Node
 import Polygon
 from Computational_Geometry import Convex_hull
 from Plot import plot_Polygon
+import matplotlib.pyplot as plt
 
 
 class Map:
@@ -40,9 +41,10 @@ class Map:
         node_list = []
         edge_list = []
         delta_x = (self.size[1] - self.size[0]) / self.number_of_obstacle
+        random.seed(3)
         for i in range(self.number_of_obstacle):
             for j in range(number_of_nodes):
-                # random.seed(j)
+
                 x = random.uniform(self.size[0] + 1 + i * delta_x, self.size[0] - 1 + (i + 1) * delta_x)
                 y = random.uniform(self.size[2] + 1, self.size[3] - 1)
                 node_list.append(Node.Node(x, y))
@@ -55,7 +57,8 @@ class Map:
             node_list = []
             edge_list = []
 
-    def Plot(self):
-        plot_Polygon(self.boundary, False)
+    def Plot(self,figure):
+        plot_Polygon(self.boundary, False,figure)
         for obstacle in self.obstacle_list:
-            plot_Polygon(obstacle, True)
+            plot_Polygon(obstacle, True,figure)
+        # plt.show()

@@ -59,5 +59,11 @@ class Node_2D:
     def __gt__(self, other):
         return self.f_value>other.f_value
 
+    def __eq__(self, other):
+        if self.x==other.x and self.y==other.y:
+            return True
+        else:
+            return False
+
     def __str__(self):
         return "x: " + str(self.x)[:4] + ", y: " + str(self.y)[:4]

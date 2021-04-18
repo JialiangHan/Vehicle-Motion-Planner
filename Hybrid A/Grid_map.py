@@ -56,7 +56,7 @@ class Grid_map:
                 y = i // self.width
                 rect = patches.Rectangle((x, y), 1, 1)
                 currentAxis.add_patch(rect)
-        plt.show()
+        # plt.show()
 
     def create_cell(self, x: int, y: int) -> Polygon:
         """

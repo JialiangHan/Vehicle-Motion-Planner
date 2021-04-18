@@ -2,14 +2,15 @@ import Map
 import numpy as np
 import Node, Edge, Polygon
 from Computational_Geometry import Convex_hull
-import geometry,math
+import geometry, math
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 
 
 class Grid_map:
-    def __init__(self, map: Map):
+    def __init__(self, map: Map, resolution):
         self.map = map
+        self.resolution = resolution
         self.width = map.size[1]
         self.grid_map = np.zeros(map.size[1] * map.size[3])
         self.generate_grid_map(map)
@@ -30,31 +31,36 @@ class Grid_map:
             while x <= x_max:
                 while y <= y_max:
                     cell = self.create_cell(x, y)
+                    index = self.get_index(x, y)
                     if geometry.intersect_polygons(cell, obstacle):
-                        self.grid_map[x + y * map.size[1]] = 1
+                        self.grid_map[index] = 1
                     elif geometry.polygon_in_polygon(cell, obstacle) == "inside":
-                        self.grid_map[x + y * map.size[1]] = 1
+                        self.grid_map[index] = 1
                     elif geometry.polygon_in_polygon(obstacle, cell) == "inside":
-                        self.grid_map[x + y * map.size[1]] = 1
+                        self.grid_map[index] = 1
                     else:
-                        self.grid_map[x + y * map.size[1]] = 0
-                    y = y + 1
-                x = x + 1
+                        self.grid_map[index] = 0
+                    y = y + self.resolution
+                x = x + self.resolution
                 y = y_min
+
+    def get_index(self, x, y) -> int:
+        index = x / self.resolution + y / self.resolution * self.width / self.resolution
+        return index
 
     def plot_grid_map(self) -> None:
         fig = plt.figure()
         currentAxis = fig.add_subplot(111)
         currentAxis.axis(self.map.size)
-        plt.xticks(np.arange(self.map.size[0], self.map.size[1], step=1))
-        plt.yticks(np.arange(self.map.size[2], self.map.size[3], step=1))
+        plt.xticks(np.arange(self.map.size[0], self.map.size[1], step=self.resolution))
+        plt.yticks(np.arange(self.map.size[2], self.map.size[3], step=self.resolution))
         plt.grid()
         self.map.Plot(currentAxis)
         for i in range(len(self.grid_map)):
             if self.grid_map[i] == 1:
-                x = i % self.width
-                y = i // self.width
-                rect = patches.Rectangle((x, y), 1, 1)
+                x = i % (self.width / self.resolution) * self.resolution
+                y = i // (self.width / self.resolution) * self.resolution
+                rect = patches.Rectangle((x, y), self.resolution, self.resolution)
                 currentAxis.add_patch(rect)
         # plt.show()
 
@@ -64,8 +70,8 @@ class Grid_map:
         """
         node_list = []
         edge_list = []
-        delta_x = [0, 0, 1, 1]
-        delta_y = [0, 1, 0, 1]
+        delta_x = [0, 0, self.resolution, self.resolution]
+        delta_y = [0, self.resolution, 0, self.resolution]
         for i in range(len(delta_y)):
             new_x = x + delta_x[i]
             new_y = y + delta_y[i]

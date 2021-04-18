@@ -57,7 +57,7 @@ class Map:
             node_list = []
             edge_list = []
 
-    def Plot(self,figure):
+    def Plot(self,figure=None):
         plot_Polygon(self.boundary, False,figure)
         for obstacle in self.obstacle_list:
             plot_Polygon(obstacle, True,figure)

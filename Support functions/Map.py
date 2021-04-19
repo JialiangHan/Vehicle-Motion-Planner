@@ -8,7 +8,6 @@ import Node
 import Polygon
 from Computational_Geometry import Convex_hull
 from Plot import plot_Polygon
-import matplotlib.pyplot as plt
 
 
 class Map:

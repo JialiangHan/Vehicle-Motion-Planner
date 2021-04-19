@@ -11,9 +11,25 @@ class Grid_map:
     def __init__(self, map: Map, resolution):
         self.map = map
         self.resolution = resolution
-        self.width = map.size[1]
-        self.grid_map = np.zeros(map.size[1] * map.size[3])
+        self.width = 0
+        self.height = 0
+        self.calculate_grid_map_size()
+        self.grid_map = np.zeros(self.width * self.height)
         self.generate_grid_map(map)
+
+    def calculate_grid_map_size(self):
+        remainder_x = self.map.size[1] // self.resolution
+        quotient_x = int(self.map.size[1] // self.resolution)
+        if remainder_x != 0.0:
+            self.width = quotient_x + 1
+        else:
+            self.width = quotient_x
+        remainder_y = self.map.size[3] // self.resolution
+        quotient_y = int(self.map.size[3] // self.resolution)
+        if remainder_y != 0.0:
+            self.height = quotient_y + 1
+        else:
+            self.height = quotient_y
 
     def generate_grid_map(self, map):
         """
@@ -23,10 +39,10 @@ class Grid_map:
             return an array object[1Xn]
             """
         for obstacle in map.obstacle_list:
-            x_min = math.floor(min(obstacle.vertices, key=lambda vertex: vertex.node.x).node.x)
-            y_min = math.floor(min(obstacle.vertices, key=lambda vertex: vertex.node.y).node.y)
-            x_max = math.ceil(max(obstacle.vertices, key=lambda vertex: vertex.node.x).node.x)
-            y_max = math.ceil(max(obstacle.vertices, key=lambda vertex: vertex.node.y).node.y)
+            x_min = self.floor_resolution(min(obstacle.vertices, key=lambda vertex: vertex.node.x).node.x)
+            y_min = self.floor_resolution(min(obstacle.vertices, key=lambda vertex: vertex.node.y).node.y)
+            x_max = self.ceil_resolution(max(obstacle.vertices, key=lambda vertex: vertex.node.x).node.x)
+            y_max = self.ceil_resolution(max(obstacle.vertices, key=lambda vertex: vertex.node.y).node.y)
             x, y = x_min, y_min
             while x <= x_max:
                 while y <= y_max:
@@ -40,13 +56,13 @@ class Grid_map:
                         self.grid_map[index] = 1
                     else:
                         self.grid_map[index] = 0
-                    y = y + self.resolution
-                x = x + self.resolution
+                    y = round(y + self.resolution,3)
+                x = round(x + self.resolution,3)
                 y = y_min
 
     def get_index(self, x, y) -> int:
-        index = x / self.resolution + y / self.resolution * self.width / self.resolution
-        return index
+        index = x//self.resolution + (y//self.resolution) * self.width
+        return int(index)
 
     def plot_grid_map(self) -> None:
         fig = plt.figure()
@@ -58,13 +74,13 @@ class Grid_map:
         self.map.Plot(currentAxis)
         for i in range(len(self.grid_map)):
             if self.grid_map[i] == 1:
-                x = i % (self.width / self.resolution) * self.resolution
-                y = i // (self.width / self.resolution) * self.resolution
+                x = i % self.width * self.resolution
+                y = i // self.width * self.resolution
                 rect = patches.Rectangle((x, y), self.resolution, self.resolution)
                 currentAxis.add_patch(rect)
         # plt.show()
 
-    def create_cell(self, x: int, y: int) -> Polygon:
+    def create_cell(self, x, y) -> Polygon:
         """
         create a small cell:polygon
         """
@@ -82,3 +98,11 @@ class Grid_map:
             edge_list.append(Edge.Edge(convexhull.hull[j], convexhull.hull[j + 1]))
         cell = Polygon.Polygon(edge_list)
         return cell
+
+    def floor_resolution(self, x):
+        quotient = int(x // self.resolution)
+        return round(quotient*self.resolution,3)
+
+    def ceil_resolution(self, x):
+        quotient = int(x // self.resolution)
+        return round((quotient + 1)*self.resolution,3)

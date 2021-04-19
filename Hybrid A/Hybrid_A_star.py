@@ -29,7 +29,7 @@ class Hybrid_A_star:
         self.start.update_heuristic(self.goal)
         self.start.update_cost_so_far()
         self.start.get_f_value()
-        index = self.grid_map.get_index(self.start.x, self.start.y)
+        index = self.get_index(self.start.x, self.start.y)
         self.open_list[index] = self.start
         while len(self.open_list.keys()) > 0:
             current_index = min(self.open_list, key=lambda x: self.open_list[x].f_value)
@@ -39,23 +39,24 @@ class Hybrid_A_star:
             if current_node == self.goal:
                 self.goal = current_node
                 break
-            dubins or RS expansion
+            #todo need add dubins or RS expansion here
             successor = self.create_successor(current_node) # need consider direction
             for succ in successor:
                 if succ.is_in_map(self.map):
-                    succ_index = self.grid_map.get_index(succ.x, succ.y)
-                    if succ_index not in self.close_list:
+                    succ_index = self.get_index(succ.x, succ.y)
+                    if succ_index not in self.close_list or succ_index==current_index:
                         if self.grid_map.grid_map[succ_index] != 1:
                             succ.update_cost_so_far()
                         else:
                             succ.cost_so_far = 10000
                         succ.update_heuristic(self.goal)
                         succ.get_f_value()
-                        if succ_index not in self.open_list or succ.cost_so_far < self.open_list[succ_index].cost_so_far:
+                        if succ_index not in self.open_list or succ.cost_so_far < self.open_list[succ_index].cost_so_far or succ_index==current_index:
                             succ.update_heuristic(self.goal)
-                            if succ_index==current_index and succ.f_value>current_index.f
-
-                            self.open_list[succ_index] = succ
+                            if succ_index==current_index and succ.f_value>current_index.f + tiebreaker:
+                                pass
+                            elif succ_index==current_index and succ.f_value<=current_index.f + tiebreaker
+                                self.open_list[succ_index] = succ
 
 
     def get_path(self):

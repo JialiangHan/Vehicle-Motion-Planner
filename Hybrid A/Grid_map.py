@@ -1,10 +1,13 @@
-import Map
-import numpy as np
-import Node, Edge, Polygon
-from Computational_Geometry import Convex_hull
-import geometry, math
-import matplotlib.pyplot as plt
 import matplotlib.patches as patches
+import matplotlib.pyplot as plt
+import numpy as np
+
+import Edge
+import Map
+import Node
+import Polygon
+import geometry
+from Computational_Geometry import Convex_hull
 
 
 class Grid_map:
@@ -56,12 +59,12 @@ class Grid_map:
                         self.grid_map[index] = 1
                     else:
                         self.grid_map[index] = 0
-                    y = round(y + self.resolution,3)
-                x = round(x + self.resolution,3)
+                    y = round(y + self.resolution, 3)
+                x = round(x + self.resolution, 3)
                 y = y_min
 
     def get_index(self, x, y) -> int:
-        index = x//self.resolution + (y//self.resolution) * self.width
+        index = x // self.resolution + (y // self.resolution) * self.width
         return int(index)
 
     def plot_grid_map(self) -> None:
@@ -101,8 +104,28 @@ class Grid_map:
 
     def floor_resolution(self, x):
         quotient = int(x // self.resolution)
-        return round(quotient*self.resolution,3)
+        return round(quotient * self.resolution, 3)
 
     def ceil_resolution(self, x):
         quotient = int(x // self.resolution)
-        return round((quotient + 1)*self.resolution,3)
+        return round((quotient + 1) * self.resolution, 3)
+
+    def is_on_grid(self, node):
+        """
+        this function return True if node in on the grid map
+        """
+        if node.x % self.resolution == 0.0 and node.y % self.resolution == 0.0:
+            return True
+        else:
+            return False
+
+    def put_on_grid(self, node):
+        """
+        this function convert a node not on the grid to a node on grid
+        """
+        if self.is_on_grid(node):
+            return node
+        else:
+            x = self.floor_resolution(node.x)
+            y = self.floor_resolution(node.y)
+            return Node.Node(x, y)

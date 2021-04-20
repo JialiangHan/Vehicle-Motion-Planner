@@ -6,12 +6,16 @@ from Node_3D import *
 import Vehicle_model
 from A_star import *
 import numpy as np
+import dubins_path_planning as dubins
+import reeds_shepp_path_planning as rs
+
 
 XY_GRID_RESOLUTION = 2.0  # [m]
 YAW_GRID_RESOLUTION = np.deg2rad(15.0)  # [rad]
 MOTION_RESOLUTION = 0.1  # [m] path interpolate resolution
 N_STEER = 20  # number of steer command
 
+TIEBREAKER = 0.01
 
 
 class Hybrid_A_star:
@@ -19,17 +23,17 @@ class Hybrid_A_star:
         self.start = start
         self.goal = goal
         self.map = map
-
+        self.grid_resolution = xy_grid_resolution
+        self.grid_map = Grid_map(map, self.grid_resolution)
+        self.angle_resolution = angle_resolution
         self.open_list = dict()
         self.close_list = dict()
 
     def run(self):
-        self.start = Node_2D(self.grid_map.put_on_grid(self.start).x, self.grid_map.put_on_grid(self.start).y)
-        self.goal = Node_2D(self.grid_map.put_on_grid(self.goal).x, self.grid_map.put_on_grid(self.goal).y)
         self.start.update_heuristic(self.goal)
         self.start.update_cost_so_far()
         self.start.get_f_value()
-        index = self.get_index(self.start.x, self.start.y)
+        index = self.get_index(self.start)
         self.open_list[index] = self.start
         while len(self.open_list.keys()) > 0:
             current_index = min(self.open_list, key=lambda x: self.open_list[x].f_value)
@@ -39,25 +43,47 @@ class Hybrid_A_star:
             if current_node == self.goal:
                 self.goal = current_node
                 break
-            #todo need add dubins or RS expansion here
-            successor = self.create_successor(current_node) # need consider direction
+            # todo need add dubins or RS expansion here
+            successor = self.create_successor(current_node)  # need consider direction
             for succ in successor:
                 if succ.is_in_map(self.map):
-                    succ_index = self.get_index(succ.x, succ.y)
-                    if succ_index not in self.close_list or succ_index==current_index:
+                    succ_index = self.get_index(succ)
+                    if succ_index not in self.close_list or succ_index == current_index:
                         if self.grid_map.grid_map[succ_index] != 1:
                             succ.update_cost_so_far()
                         else:
                             succ.cost_so_far = 10000
                         succ.update_heuristic(self.goal)
                         succ.get_f_value()
-                        if succ_index not in self.open_list or succ.cost_so_far < self.open_list[succ_index].cost_so_far or succ_index==current_index:
+                        if succ_index not in self.open_list or succ.cost_so_far < self.open_list[
+                            succ_index].cost_so_far or succ_index == current_index:
                             succ.update_heuristic(self.goal)
-                            if succ_index==current_index and succ.f_value>current_index.f + tiebreaker:
+                            if succ_index == current_index and succ.f_value > current_index.f + TIEBREAKER:
                                 pass
-                            elif succ_index==current_index and succ.f_value<=current_index.f + tiebreaker
+                            elif succ_index == current_index and succ.f_value <= current_index.f + TIEBREAKER:
                                 self.open_list[succ_index] = succ
 
+    def update_heuristics(self, node):
+        constrained_heuristic = self.constrained_heuristic(node)
+        unconstrained_heuristic = self.unconstrained_heuristic(node)
+        return max(constrained_heuristic, unconstrained_heuristic)
+
+    def constrained_heuristic(self, node):
+        """
+        consider vehicle constraint but neglect obstacle
+        """
+        return result
+
+    def unconstrained_heuristic(self, node):
+        """
+        this is heuristic from A star, not consider vehicle constraint, consider obstacle
+        """
+        start = Node_2D(self.goal.x, self.goal.y)
+        goal = Node_2D(node.x, node.y)
+        a_star = A_star(start, goal, self.map, self.grid_resolution)
+        a_star.run()
+        result = a_star.goal.cost_so_far
+        return result
 
     def get_path(self):
         path_x, path_y, path_theta = [self.goal.x], [self.goal.y], [self.goal.theta]
@@ -72,11 +98,10 @@ class Hybrid_A_star:
         return path_x, path_y, path_theta
 
     def get_index(self, node):
-        index = (node.x - self.map.size[0]) + (node.y - self.map.size[2]) * width + node.theta * width * height
+        index = (node.x - self.map.size[0]) + \
+                (node.y - self.map.size[2]) * self.grid_map.width + \
+                node.theta // self.angle_resolution * self.grid_map.width * self.grid_map.height
         return index
-
-    def map_config(self):
-
 
     def plot_path(self):
         self.map.Plot()

@@ -72,6 +72,7 @@ class Hybrid_A_star:
         """
         consider vehicle constraint but neglect obstacle
         """
+
         return result
 
     def unconstrained_heuristic(self, node):

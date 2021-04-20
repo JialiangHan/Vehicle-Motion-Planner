@@ -38,7 +38,10 @@ class Node_3D:
         self.discover = False
         self.index = -1
         self.f_value = 0
-        self.movement_index = movement_index
+        if movement_index is None:
+            self.movement_index = 0
+        else:
+            self.movement_index=movement_index
 
     def get_f_value(self):
         self.f_value = self.cost_so_far + self.heuristic
@@ -50,24 +53,27 @@ class Node_3D:
             return False
 
     def update_cost_so_far(self):
-        if self.movement_index < 3:  # forward
-            if self.movement_index != self.Predecessor.movement_index:  # turning
-                if self.Predecessor.movement_index > 2:  # change of direction: reverse to forward
-                    movement_cost = delta_x[0] * WEIGHT_CHANGE_OF_DIRECTION * WEIGHT_TURNING
+        if self.Predecessor!=self:
+            if self.movement_index < 3:  # forward
+                if self.movement_index != self.Predecessor.movement_index:  # turning
+                    if self.Predecessor.movement_index > 2:  # change of direction: reverse to forward
+                        movement_cost = delta_x[0] * WEIGHT_CHANGE_OF_DIRECTION * WEIGHT_TURNING
+                    else:
+                        movement_cost = delta_x[0] * WEIGHT_TURNING
                 else:
-                    movement_cost = delta_x[0] * WEIGHT_TURNING
-            else:
-                movement_cost = delta_x[0]
-        else:  # reverse
-            if self.movement_index != self.Predecessor.movement_index:  # turning
-                if self.Predecessor.movement_index < 3:  # change of direction: reverse to forward
-                    movement_cost = delta_x[0] * WEIGHT_CHANGE_OF_DIRECTION * WEIGHT_TURNING * WEIGHT_REVERSE
+                    movement_cost = delta_x[0]
+            else:  # reverse
+                if self.movement_index != self.Predecessor.movement_index:  # turning
+                    if self.Predecessor.movement_index < 3:  # change of direction: reverse to forward
+                        movement_cost = delta_x[0] * WEIGHT_CHANGE_OF_DIRECTION * WEIGHT_TURNING * WEIGHT_REVERSE
+                    else:
+                        movement_cost = delta_x[0] * WEIGHT_TURNING * WEIGHT_REVERSE
                 else:
-                    movement_cost = delta_x[0] * WEIGHT_TURNING * WEIGHT_REVERSE
-            else:
-                movement_cost = delta_x[0] * WEIGHT_REVERSE
-        self.cost_so_far = self.cost_so_far + movement_cost
-        self.discover = True
+                    movement_cost = delta_x[0] * WEIGHT_REVERSE
+            self.cost_so_far = self.cost_so_far + movement_cost
+            self.discover = True
+        else:
+            self.cost_so_far = 0
 
     def __gt__(self, other):
         return self.f_value > other.f_value
@@ -82,8 +88,8 @@ class Node_3D:
         successors = []
         for i in range(6):
             if i < 3:  # forward
-                x = self.x + delta_x[i] * math.cos(self.theta) - delta_y * math.sin(self.theta)
-                y = self.y + delta_x[i] * math.sin(self.theta) + delta_y * math.cos(self.theta)
+                x = self.x + delta_x[i] * math.cos(self.theta) - delta_y[i] * math.sin(self.theta)
+                y = self.y + delta_x[i] * math.sin(self.theta) + delta_y[i] * math.cos(self.theta)
                 theta = Angle.convert_into_2pi(self.theta + delta_theta[i])
             else:  # backward
                 x = self.x - delta_x[i - 3] * math.cos(self.theta) - delta_y[i - 3] * math.sin(self.theta)

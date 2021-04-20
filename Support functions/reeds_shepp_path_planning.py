@@ -349,8 +349,8 @@ def calc_paths(sx, sy, syaw, gx, gy, gyaw, maxc, step_size):
 
 
 def reeds_shepp_path_planning(sx, sy, syaw,
-                              gx, gy, gyaw, maxc, step_size=0.2):
-    paths = calc_paths(sx, sy, syaw, gx, gy, gyaw, maxc, step_size)
+                              gx, gy, gyaw, curvature, step_size=0.2):
+    paths = calc_paths(sx, sy, syaw, gx, gy, gyaw, curvature, step_size)
 
     if not paths:
         return None, None, None, None, None
@@ -364,27 +364,27 @@ def reeds_shepp_path_planning(sx, sy, syaw,
 
     bpath = paths[best_path_index]
 
-    return bpath.x, bpath.y, bpath.yaw, bpath.ctypes, bpath.lengths
+    return bpath.x, bpath.y, bpath.yaw, bpath.ctypes, sum(bpath.lengths)
 
 
 def main():
     print("Reeds Shepp path planner sample start!!")
 
-    # start_x = -1.0  # [m]
-    # start_y = -4.0  # [m]
-    # start_yaw = np.deg2rad(-20.0)  # [rad]
+    start_x = -1.0  # [m]
+    start_y = -4.0  # [m]
+    start_yaw = np.deg2rad(-20.0)  # [rad]
+
+    end_x = 5.0  # [m]
+    end_y = 5.0  # [m]
+    end_yaw = np.deg2rad(25.0)  # [rad]
+
+    # start_x = 0.0  # [m]
+    # start_y = 0.0  # [m]
+    # start_yaw = np.deg2rad(0.0)  # [rad]
     #
-    # end_x = 5.0  # [m]
-    # end_y = 5.0  # [m]
-    # end_yaw = np.deg2rad(25.0)  # [rad]
-
-    start_x = 0.0  # [m]
-    start_y = 0.0  # [m]
-    start_yaw = np.deg2rad(0.0)  # [rad]
-
-    end_x = 0.0  # [m]
-    end_y = 0.0  # [m]
-    end_yaw = np.deg2rad(0.0)  # [rad]
+    # end_x = 0.0  # [m]
+    # end_y = 0.0  # [m]
+    # end_yaw = np.deg2rad(0.0)  # [rad]
 
     curvature = 1.0
     step_size = 0.1

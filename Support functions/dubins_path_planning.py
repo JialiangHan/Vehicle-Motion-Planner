@@ -203,7 +203,7 @@ def interpolate(ind, length, mode, max_curvature, origin_x, origin_y,
     return path_x, path_y, path_yaw, directions
 
 
-def dubins_path_planning(s_x, s_y, s_yaw, g_x, g_y, g_yaw, c, step_size=0.1):
+def dubins_path_planning(s_x, s_y, s_yaw, g_x, g_y, g_yaw, curvature, step_size=0.1):
     """
     Dubins path planner
 
@@ -226,7 +226,7 @@ def dubins_path_planning(s_x, s_y, s_yaw, g_x, g_y, g_yaw, c, step_size=0.1):
     le_yaw = g_yaw - s_yaw
 
     lp_x, lp_y, lp_yaw, mode, lengths = dubins_path_planning_from_origin(
-        le_xy[0], le_xy[1], le_yaw, c, step_size)
+        le_xy[0], le_xy[1], le_yaw, curvature, step_size)
 
     rot = Rot.from_euler('z', -s_yaw).as_matrix()[0:2, 0:2]
     converted_xy = np.stack([lp_x, lp_y]).T @ rot

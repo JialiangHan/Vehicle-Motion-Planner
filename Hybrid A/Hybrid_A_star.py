@@ -1,21 +1,14 @@
 """
 this A star is only for calculating unconstrained heuristic for hybrid A
 """
-import Map
 from Node_3D import *
 import Vehicle_model
 from A_star import *
-import numpy as np
 import dubins_path_planning as dubins
 import reeds_shepp_path_planning as rs
 
-
-XY_GRID_RESOLUTION = 2.0  # [m]
-YAW_GRID_RESOLUTION = np.deg2rad(15.0)  # [rad]
-MOTION_RESOLUTION = 0.1  # [m] path interpolate resolution
-N_STEER = 20  # number of steer command
-
-TIEBREAKER = 0.01
+REVERSE = True
+TIEBREAKER = 0.75
 
 
 class Hybrid_A_star:
@@ -30,7 +23,7 @@ class Hybrid_A_star:
         self.close_list = dict()
 
     def run(self):
-        self.start.update_heuristic(self.goal)
+        self.update_heuristics(self.start)
         self.start.update_cost_so_far()
         self.start.get_f_value()
         index = self.get_index(self.start)
@@ -40,39 +33,48 @@ class Hybrid_A_star:
             current_node = self.open_list[current_index]
             del self.open_list[current_index]
             self.close_list[current_index] = current_node
-            if current_node == self.goal:
+            if current_index == self.get_index(self.goal):
                 self.goal = current_node
                 break
             # todo need add dubins or RS expansion here
-            successor = self.create_successor(current_node)  # need consider direction
+            successor = current_node.create_successor()  # need consider direction
             for succ in successor:
                 if succ.is_in_map(self.map):
                     succ_index = self.get_index(succ)
                     if succ_index not in self.close_list or succ_index == current_index:
-                        if self.grid_map.grid_map[succ_index] != 1:
+                        succ_index_2D = self.grid_map.get_index(succ.x, succ.y)
+                        if self.grid_map.grid_map[succ_index_2D] != 1:
                             succ.update_cost_so_far()
                         else:
                             succ.cost_so_far = 10000
-                        succ.update_heuristic(self.goal)
+                        self.update_heuristics(succ)
                         succ.get_f_value()
-                        if succ_index not in self.open_list or succ.cost_so_far < self.open_list[
-                            succ_index].cost_so_far or succ_index == current_index:
-                            succ.update_heuristic(self.goal)
-                            if succ_index == current_index and succ.f_value > current_index.f + TIEBREAKER:
+                        if succ_index not in self.open_list or succ.cost_so_far < self.open_list[succ_index].cost_so_far or succ_index == current_index:
+                            #self.update_heuristics(succ)
+                            if succ_index == current_index and succ.f_value > current_node.f_value + TIEBREAKER:
                                 pass
-                            elif succ_index == current_index and succ.f_value <= current_index.f + TIEBREAKER:
+                            elif succ_index == current_index and succ.f_value <= current_node.f_value + TIEBREAKER:
+                                self.open_list[succ_index] = succ
+                            else:
                                 self.open_list[succ_index] = succ
 
     def update_heuristics(self, node):
         constrained_heuristic = self.constrained_heuristic(node)
         unconstrained_heuristic = self.unconstrained_heuristic(node)
-        return max(constrained_heuristic, unconstrained_heuristic)
+        node.heuristic = max(constrained_heuristic, unconstrained_heuristic)
 
     def constrained_heuristic(self, node):
         """
         consider vehicle constraint but neglect obstacle
         """
-
+        # todo make this function an offline lookup table
+        curvature = 1 / R
+        if REVERSE is True:
+            _, _, _, _, result = rs.reeds_shepp_path_planning(node.x, node.y, node.theta,
+                                                              self.goal.x, self.goal.y, self.goal.theta, curvature)
+        else:
+            _, _, _, _, result = dubins.dubins_path_planning(node.x, node.y, node.theta,
+                                                             self.goal.x, self.goal.y, self.goal.theta, curvature)
         return result
 
     def unconstrained_heuristic(self, node):
@@ -99,10 +101,10 @@ class Hybrid_A_star:
         return path_x, path_y, path_theta
 
     def get_index(self, node):
-        index = (node.x - self.map.size[0]) + \
-                (node.y - self.map.size[2]) * self.grid_map.width + \
+        index = (node.x - self.map.size[0]) // self.grid_resolution + \
+                (node.y - self.map.size[2]) // self.grid_resolution * self.grid_map.width + \
                 node.theta // self.angle_resolution * self.grid_map.width * self.grid_map.height
-        return index
+        return int(index)
 
     def plot_path(self):
         self.map.Plot()

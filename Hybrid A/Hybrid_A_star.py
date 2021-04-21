@@ -142,12 +142,13 @@ class Hybrid_A_star:
         plt.grid()
 
     def plot_vehicle(self):
-        # self.map.Plot()
+
         path_x, path_y, path_theta = self.path[0], self.path[1], self.path[2]
         # plt.plot(path_x, path_y, "-r", label="Hybrid A* path")
         # plt.legend(loc="upper left")
         x_list = []
         y_list = []
+        self.grid_map.plot_grid_map()
         for x, y, yaw in zip(path_x, path_y, path_theta):
             plt.cla()
             self.map.Plot()

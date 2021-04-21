@@ -22,6 +22,7 @@ class Hybrid_A_star:
         self.angle_resolution = angle_resolution
         self.open_list = dict()
         self.close_list = dict()
+        self.path = []
 
     def run(self):
         self.update_heuristics(self.start)
@@ -37,7 +38,9 @@ class Hybrid_A_star:
             if current_index == self.get_index(self.goal):
                 self.goal = current_node
                 break
-            # todo need add dubins or RS expansion here
+            flag, path = self.analytic_expansion(current_node)
+            if flag:
+                break
             successor = current_node.create_successor()  # need consider direction
             for succ in successor:
                 if succ.is_in_map(self.map):
@@ -50,14 +53,31 @@ class Hybrid_A_star:
                             succ.cost_so_far = 10000
                         self.update_heuristics(succ)
                         succ.get_f_value()
-                        if succ_index not in self.open_list or succ.cost_so_far < self.open_list[succ_index].cost_so_far or succ_index == current_index:
-                            #self.update_heuristics(succ)
+                        if succ_index not in self.open_list or succ.cost_so_far < self.open_list[
+                            succ_index].cost_so_far or succ_index == current_index:
+                            # self.update_heuristics(succ)
                             if succ_index == current_index and succ.f_value > current_node.f_value + TIEBREAKER:
                                 pass
                             elif succ_index == current_index and succ.f_value <= current_node.f_value + TIEBREAKER:
                                 self.open_list[succ_index] = succ
                             else:
                                 self.open_list[succ_index] = succ
+        self.get_path(current_node, path)
+
+    def analytic_expansion(self, node):
+        curvature = 1 / R
+        px, py, ptheta, mode, length = rs.reeds_shepp_path_planning(node.x, node.y, node.theta,
+                                                                    self.goal.x, self.goal.y, self.goal.theta,
+                                                                    curvature)
+        flag = True
+        for x, y in zip(px, py):
+            index_2D = self.grid_map.get_index(x, y)
+            if self.grid_map.grid_map[index_2D] == 1:
+                flag = False
+            else:
+                flag = True
+        path = [px, py, ptheta]
+        return flag, path
 
     def update_heuristics(self, node):
         constrained_heuristic = self.constrained_heuristic(node)
@@ -89,9 +109,10 @@ class Hybrid_A_star:
         result = a_star.goal.cost_so_far
         return result
 
-    def get_path(self):
-        path_x, path_y, path_theta = [self.goal.x], [self.goal.y], [self.goal.theta]
-        current_node = self.goal
+    def get_path(self, node, path):
+        x_list, y_list, theta_list = [], [], []
+        path_x, path_y, path_theta = [node.x], [node.y], [node.theta]
+        current_node = node
         while 1:
             current_node = current_node.Predecessor
             path_x.append(current_node.x)
@@ -99,10 +120,13 @@ class Hybrid_A_star:
             path_theta.append(current_node.theta)
             if current_node == self.start:
                 break
-        path_x_reversed=list(reversed(path_x))
-        path_y_reversed=list(reversed(path_y))
-        path_theta_reversed=list(reversed(path_theta))
-        return path_x_reversed, path_y_reversed, path_theta_reversed
+        path_x_reversed = list(reversed(path_x))
+        path_y_reversed = list(reversed(path_y))
+        path_theta_reversed = list(reversed(path_theta))
+        x_list = path_x_reversed + path[0]
+        y_list = path_y_reversed + path[1]
+        theta_list = path_theta_reversed + path[2]
+        self.path = [x_list, y_list, theta_list]
 
     def get_index(self, node):
         index = (node.x - self.map.size[0]) // self.grid_resolution + \
@@ -112,14 +136,14 @@ class Hybrid_A_star:
 
     def plot_path(self):
         self.map.Plot()
-        path_x, path_y, path_theta = self.get_path()
+        path_x, path_y, path_theta = self.path[0],self.path[1],self.path[2]
         plt.plot(path_x, path_y, "-r", label="Hybrid A* path")
         plt.legend(loc="upper left")
         plt.grid()
 
     def plot_vehicle(self):
         # self.map.Plot()
-        path_x, path_y, path_theta = self.get_path()
+        path_x, path_y, path_theta = self.path[0], self.path[1], self.path[2]
         # plt.plot(path_x, path_y, "-r", label="Hybrid A* path")
         # plt.legend(loc="upper left")
         x_list = []
@@ -129,7 +153,7 @@ class Hybrid_A_star:
             self.map.Plot()
             x_list.append(x)
             y_list.append(y)
-            plt.plot(x_list,y_list,"-r")
+            plt.plot(x_list, y_list, "-r")
             plt.grid(True)
             plt.axis("equal")
             Vehicle_model.plot_car(x, y, yaw)

@@ -74,6 +74,7 @@ class Hybrid_A_star:
             index_2D = self.grid_map.get_index(x, y)
             if self.grid_map.grid_map[index_2D] == 1:
                 flag = False
+                break
             else:
                 flag = True
         path = [px, py, ptheta]

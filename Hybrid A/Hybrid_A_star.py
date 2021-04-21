@@ -6,7 +6,6 @@ import Vehicle_model
 from A_star import *
 import dubins_path_planning as dubins
 import reeds_shepp_path_planning as rs
-import matplotlib.animation as ani
 
 REVERSE = True
 TIEBREAKER = 0.75
@@ -138,12 +137,11 @@ class Hybrid_A_star:
     def plot_path(self):
         self.map.Plot()
         path_x, path_y, path_theta = self.path[0],self.path[1],self.path[2]
-        plt.plot(path_x, path_y, "-r", label="Hybrid A* path")
+        plt.plot(path_x, path_y, label=self.grid_resolution)
         plt.legend(loc="upper left")
         plt.grid()
 
     def plot_vehicle(self):
-
         path_x, path_y, path_theta = self.path[0], self.path[1], self.path[2]
         # plt.plot(path_x, path_y, "-r", label="Hybrid A* path")
         # plt.legend(loc="upper left")

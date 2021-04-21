@@ -36,28 +36,28 @@ class Map:
         self.boundary = Polygon.Polygon(edge_list)
 
     def generate_obstacle(self):
-        number_of_nodes = 5  # number of vertex
-        node_list = []
-        edge_list = []
-        delta_x = (self.size[1] - self.size[0]) / self.number_of_obstacle
-        random.seed(3)
-        for i in range(self.number_of_obstacle):
-            for j in range(number_of_nodes):
-
-                x = random.uniform(self.size[0] + 1 + i * delta_x, self.size[0] - 1 + (i + 1) * delta_x)
-                y = random.uniform(self.size[2] + 1, self.size[3] - 1)
-                node_list.append(Node.Node(x, y))
-            convexhull = Convex_hull(node_list)
-            convexhull.run()
-            for j in range(len(convexhull.hull) - 1):
-                edge_list.append(Edge.Edge(convexhull.hull[j], convexhull.hull[j + 1]))
-            polygon = Polygon.Polygon(edge_list)
-            self.obstacle_list.append(polygon)
+        if self.number_of_obstacle != 0:
+            number_of_nodes = 5  # number of vertex
             node_list = []
             edge_list = []
+            delta_x = (self.size[1] - self.size[0]) / self.number_of_obstacle
+            random.seed(3)
+            for i in range(self.number_of_obstacle):
+                for j in range(number_of_nodes):
+                    x = random.uniform(self.size[0] + 1 + i * delta_x, self.size[0] - 1 + (i + 1) * delta_x)
+                    y = random.uniform(self.size[2] + 1, self.size[3] - 1)
+                    node_list.append(Node.Node(x, y))
+                convexhull = Convex_hull(node_list)
+                convexhull.run()
+                for j in range(len(convexhull.hull) - 1):
+                    edge_list.append(Edge.Edge(convexhull.hull[j], convexhull.hull[j + 1]))
+                polygon = Polygon.Polygon(edge_list)
+                self.obstacle_list.append(polygon)
+                node_list = []
+                edge_list = []
 
-    def Plot(self,figure=None):
-        plot_Polygon(self.boundary, False,figure)
+    def Plot(self, figure=None):
+        plot_Polygon(self.boundary, False, figure)
         for obstacle in self.obstacle_list:
-            plot_Polygon(obstacle, True,figure)
+            plot_Polygon(obstacle, True, figure)
         # plt.show()

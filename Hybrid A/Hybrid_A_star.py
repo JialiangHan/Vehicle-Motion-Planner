@@ -6,6 +6,7 @@ import Vehicle_model
 from A_star import *
 import dubins_path_planning as dubins
 import reeds_shepp_path_planning as rs
+import matplotlib.animation as ani
 
 REVERSE = True
 TIEBREAKER = 0.75
@@ -98,7 +99,10 @@ class Hybrid_A_star:
             path_theta.append(current_node.theta)
             if current_node == self.start:
                 break
-        return path_x, path_y, path_theta
+        path_x_reversed=list(reversed(path_x))
+        path_y_reversed=list(reversed(path_y))
+        path_theta_reversed=list(reversed(path_theta))
+        return path_x_reversed, path_y_reversed, path_theta_reversed
 
     def get_index(self, node):
         index = (node.x - self.map.size[0]) // self.grid_resolution + \
@@ -110,11 +114,23 @@ class Hybrid_A_star:
         self.map.Plot()
         path_x, path_y, path_theta = self.get_path()
         plt.plot(path_x, path_y, "-r", label="Hybrid A* path")
+        plt.legend(loc="upper left")
+        plt.grid()
 
     def plot_vehicle(self):
+        # self.map.Plot()
         path_x, path_y, path_theta = self.get_path()
+        # plt.plot(path_x, path_y, "-r", label="Hybrid A* path")
+        # plt.legend(loc="upper left")
+        x_list = []
+        y_list = []
         for x, y, yaw in zip(path_x, path_y, path_theta):
+            plt.cla()
+            self.map.Plot()
+            x_list.append(x)
+            y_list.append(y)
+            plt.plot(x_list,y_list,"-r")
             plt.grid(True)
             plt.axis("equal")
             Vehicle_model.plot_car(x, y, yaw)
-            plt.pause(0.0001)
+            plt.pause(0.1)

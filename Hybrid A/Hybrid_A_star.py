@@ -6,9 +6,11 @@ import Vehicle_model
 from A_star import *
 import dubins_path_planning as dubins
 import reeds_shepp_path_planning as rs
+import time
 
 REVERSE = True
 TIEBREAKER = 0.75
+Analytic_expansion = True
 
 
 class Hybrid_A_star:
@@ -22,8 +24,10 @@ class Hybrid_A_star:
         self.open_list = dict()
         self.close_list = dict()
         self.path = []
+        self.time = 0
 
     def run(self):
+        start_time = time.time()
         self.update_heuristics(self.start)
         self.start.update_cost_so_far()
         self.start.get_f_value()
@@ -37,9 +41,12 @@ class Hybrid_A_star:
             if current_index == self.get_index(self.goal):
                 self.goal = current_node
                 break
-            flag, path = self.analytic_expansion(current_node)
-            if flag:
-                break
+            if Analytic_expansion == True:
+                flag, path = self.analytic_expansion(current_node)
+                if flag:
+                    break
+            else:
+                path = None
             successor = current_node.create_successor()  # need consider direction
             for succ in successor:
                 if succ.is_in_map(self.map):
@@ -62,6 +69,9 @@ class Hybrid_A_star:
                             else:
                                 self.open_list[succ_index] = succ
         self.get_path(current_node, path)
+        # self.get_path(current_node)
+        end_time = time.time()
+        self.time = end_time - start_time
 
     def analytic_expansion(self, node):
         curvature = 1 / R
@@ -109,7 +119,7 @@ class Hybrid_A_star:
         result = a_star.goal.cost_so_far
         return result
 
-    def get_path(self, node, path):
+    def get_path(self, node, path=None):
         x_list, y_list, theta_list = [], [], []
         path_x, path_y, path_theta = [node.x], [node.y], [node.theta]
         current_node = node
@@ -123,9 +133,14 @@ class Hybrid_A_star:
         path_x_reversed = list(reversed(path_x))
         path_y_reversed = list(reversed(path_y))
         path_theta_reversed = list(reversed(path_theta))
-        x_list = path_x_reversed + path[0]
-        y_list = path_y_reversed + path[1]
-        theta_list = path_theta_reversed + path[2]
+        if path is not None:
+            x_list = path_x_reversed + path[0]
+            y_list = path_y_reversed + path[1]
+            theta_list = path_theta_reversed + path[2]
+        else:
+            x_list = path_x_reversed
+            y_list = path_y_reversed
+            theta_list = path_theta_reversed
         self.path = [x_list, y_list, theta_list]
 
     def get_index(self, node):
@@ -136,8 +151,8 @@ class Hybrid_A_star:
 
     def plot_path(self):
         self.map.Plot()
-        path_x, path_y, path_theta = self.path[0],self.path[1],self.path[2]
-        plt.plot(path_x, path_y, label=self.grid_resolution)
+        path_x, path_y, path_theta = self.path[0], self.path[1], self.path[2]
+        plt.plot(path_x, path_y, label="no smooth")
         plt.legend(loc="upper left")
         plt.grid()
 

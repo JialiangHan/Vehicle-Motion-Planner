@@ -7,6 +7,7 @@ from math import sqrt
 import Edge
 import Node
 import Polygon
+import geometry
 
 
 def dist(a: Node.Node, b: Node.Node) -> float:
@@ -18,28 +19,70 @@ def dist(a: Node.Node, b: Node.Node) -> float:
     return distance
 
 
+def distance_node_to_polygons(node: Node.Node, polygon_list: list):
+    temp = {}
+    for polygon in polygon_list:
+        distance, closest_node = distance_node_to_polygon(node, polygon)
+        temp[closest_node] = distance
+    closest_node = min(temp, key=temp.get)
+    distance = temp[closest_node]
+    return distance, closest_node
+
+
 def distance_node_to_polygon(node: Node.Node, polygon: Polygon.Polygon) -> float:
     # distance between node and polygon,
-    # determine if edge of polygon are visible to node
-    # then calculate distance
-    # return min distance
-    # not consider obstacle
-    distance = float("inf")
+    temp = {}
     for edge in polygon.edge_list:
-        if distance > distance_node_to_segment(node, edge):
-            distance = distance_node_to_segment(node, edge)
-    return distance
+        distance = distance_node_to_segment(node, edge)
+        closest_node = closest_node_on_segment_to_node(node, edge)
+        temp[closest_node] = distance
+    closest_node = min(temp, key=temp.get)
+    distance = temp[closest_node]
+    return distance, closest_node
 
 
-def distance_node_to_segment(node: Node.Node, segment: Edge.Edge) -> float:
-    # distance between node and segment
+def distance_node_to_segment(node: Node.Node, segment: Edge.Edge):
+    # distance between node and segment, return min distance and closest point on segment to the node
     A_start, B_start, C_start = perpendicular(segment.start, segment)
     A_end, B_end, C_end = perpendicular(segment.end, segment)
     if line_value(A_start, B_start, C_start, node) * line_value(A_end, B_end, C_end, node) < 0:
         distance = abs(line_value(segment.A, segment.B, segment.C, node) / sqrt(segment.A ** 2 + segment.B ** 2))
+        node_A, node_B, node_C = perpendicular(node, segment)
+        x = 10000
+        y = (-node_A * x - node_C) / node_B
+        end = Node.Node(x, y)
+        node_segment = Edge.Edge(node, end)
+        if geometry.intersect(segment, node_segment):
+            closest_node = geometry.intersection(segment, node_segment)
     else:
         distance = min(dist(node, segment.start), dist(node, segment.end))
     return distance
+
+
+def closest_node_on_segment_to_node(node, segment) -> Node.Node:
+    A_start, B_start, C_start = perpendicular(segment.start, segment)
+    A_end, B_end, C_end = perpendicular(segment.end, segment)
+    if line_value(A_start, B_start, C_start, node) * line_value(A_end, B_end, C_end, node) < 0:
+        node_A, node_B, node_C = perpendicular(node, segment)
+        x = 10000
+        y = (-node_A * x - node_C) / node_B
+        end = Node.Node(x, y)
+        node_segment = Edge.Edge(node, end)
+        if geometry.intersect(segment, node_segment):
+            closest_node = geometry.intersection(segment, node_segment)
+        else:
+            x = -10000
+            y = (-node_A * x - node_C) / node_B
+            end = Node.Node(x, y)
+            node_segment = Edge.Edge(node, end)
+            closest_node = geometry.intersection(segment, node_segment)
+    else:
+        closest_node = segment.start
+        distance_to_start = dist(node, segment.start)
+        distance_to_end = dist(node, segment.end)
+        if distance_to_start > distance_to_end:
+            closest_node = segment.end
+    return closest_node
 
 
 def line_value(A: float, B: float, C: float, node: Node.Node) -> float:

@@ -54,7 +54,7 @@ def intersection(edge1: Edge.Edge, edge2: Edge.Edge) -> Node.Node:
         a = np.array([[edge1.A, edge1.B], [edge2.A, edge2.B]])
         b = np.array([[-edge1.C], [-edge2.C]])
         result = np.linalg.solve(a, b)
-        result = Node.Node(result[0], result[1])
+        result = Node.Node(result[0][0], result[1][0])
         return result
 
 

@@ -41,7 +41,7 @@ class Hybrid_A_star:
             if current_index == self.get_index(self.goal):
                 self.goal = current_node
                 break
-            if Analytic_expansion == True:
+            if Analytic_expansion:
                 flag, path = self.analytic_expansion(current_node)
                 if flag:
                     break
@@ -69,7 +69,6 @@ class Hybrid_A_star:
                             else:
                                 self.open_list[succ_index] = succ
         self.get_path(current_node, path)
-        # self.get_path(current_node)
         end_time = time.time()
         self.time = end_time - start_time
 
@@ -134,9 +133,9 @@ class Hybrid_A_star:
         path_y_reversed = list(reversed(path_y))
         path_theta_reversed = list(reversed(path_theta))
         if path is not None:
-            x_list = path_x_reversed + path[0]
-            y_list = path_y_reversed + path[1]
-            theta_list = path_theta_reversed + path[2]
+            x_list = path_x_reversed[:-1] + path[0]
+            y_list = path_y_reversed[:-1] + path[1]
+            theta_list = path_theta_reversed[:-1] + path[2]
         else:
             x_list = path_x_reversed
             y_list = path_y_reversed

@@ -95,7 +95,7 @@ class Node_3D:
                 x = self.x - delta_x[i - 3] * math.cos(self.theta) - delta_y[i - 3] * math.sin(self.theta)
                 y = self.y - delta_x[i - 3] * math.sin(self.theta) + delta_y[i - 3] * math.cos(self.theta)
                 theta = Angle.convert_into_2pi(self.theta - delta_theta[i - 3])
-            successors.append(Node_3D(x, y, theta, self.cost_so_far, None, self, i))
+            successors.append(Node_3D(round(x,5), round(y,5), theta, self.cost_so_far, None, self, i))
         return successors
 
     def __str__(self):

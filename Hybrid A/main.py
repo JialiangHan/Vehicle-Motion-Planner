@@ -28,7 +28,9 @@ def main():
         # path_evaluation(hybrid_a_star.path, hybrid_a_star.map)
         smooth = Path_smoother(hybrid_a_star.path, hybrid_a_star.map, max_iterations)
         smooth.plot()
-    path_evaluation(smooth.smoothed_path,map)
+        # smooth5 = Path_smoother(hybrid_a_star.path, hybrid_a_star.map, max_iterations)
+        # smooth5.plot()
+    # path_evaluation(smooth.smoothed_path,map)
     plt.show()
 
 

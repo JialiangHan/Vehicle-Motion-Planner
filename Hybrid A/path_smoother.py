@@ -10,6 +10,7 @@ import Node
 import matplotlib.pyplot as plt
 import numpy as np
 import math
+import copy
 
 Dmax = 2  # [m]
 Weight_obstacle = 0.25
@@ -30,9 +31,9 @@ class Path_smoother:
     def gradient_descent(self):
         alpha = 0.1
         iteration = 0
-        total_weight = Weight_obstacle + Weight_curvature + Weight_smoothness  # +Weight_voronoi
-        path = self.path
-        smooth_path = {}
+        total_weight = Weight_obstacle  # + Weight_curvature + Weight_smoothness  # +Weight_voronoi
+        path = copy.deepcopy(self.path)
+        smooth_path = [self.path, path]
         while iteration < self.max_iterations:
             for i in range(1, len(path[0]) - 2):
                 gradient = 0
@@ -42,15 +43,21 @@ class Path_smoother:
                 xs = np.array([[path[0][i + 1], path[1][i + 1]]])
                 xs1 = np.array([[path[0][i + 2], path[1][i + 2]]])
                 gradient = gradient - self.obstacle_term(xi)
-                gradient = gradient - self.curvature_term(xp, xi, xs)
-                gradient = gradient - self.smooth_term(xp1,xp,xi,xs,xs1)
+                # gradient = gradient - self.curvature_term(xp, xi, xs)
+                # gradient = gradient - self.smooth_term(xp1,xp,xi,xs,xs1)
                 # gradient=gradient-self.voronoi_term()
                 xi = xi + alpha * gradient / total_weight
                 path[0][i] = xi[0][0]
                 path[1][i] = xi[0][1]
                 path[2][i] = math.atan2(xi[0][1] - xp[0][1], xi[0][0] - xp[0][0])
-            smooth_path[iteration] = path
+            smooth_path[1] = path
+            diff = self.path_different(smooth_path)
+            smooth_path[0] = copy.deepcopy(smooth_path[1])
+            if diff<0.1:
+                print(iteration)
+                break
             iteration = iteration + 1
+
         self.smoothed_path = path
 
     def obstacle_term(self, node: np.ndarray):
@@ -99,11 +106,25 @@ class Path_smoother:
 
     @staticmethod
     def smooth_term(xp2, xp1, xi, xs1, xs2):
-        gradient = Weight_smoothness*(-xp1+2*xi-xs1)
+        gradient = Weight_smoothness * (-xp1 + 2 * xi - xs1)
+        # gradient=Weight_smoothness * (xp2 - 4 * xp1 + 6 * xi - 4 * xs1 + xs2);
         return gradient
+
     # def voronoi_term(self):
+
     def plot(self):
         path_x, path_y, path_theta = self.smoothed_path[0], self.smoothed_path[1], self.smoothed_path[2]
         plt.plot(path_x, path_y, label=self.max_iterations)
         plt.legend(loc="upper left")
         plt.grid(True)
+
+    @staticmethod
+    def path_different(path):
+        diff = 0
+        for i in range(len(path[0][0])):
+            dx = path[1][0][i] - path[0][0][i]
+            dy = path[1][1][i] - path[0][1][i]
+            d = math.sqrt(dx ** 2 + dy ** 2)
+            diff = diff + d
+        diff = diff / len([path[1]])
+        return diff

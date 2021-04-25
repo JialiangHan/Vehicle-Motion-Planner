@@ -8,7 +8,7 @@ import dubins_path_planning as dubins
 import reeds_shepp_path_planning as rs
 import time
 
-REVERSE = True
+REVERSE = False
 TIEBREAKER = 0.75
 Analytic_expansion = True
 
@@ -45,6 +45,8 @@ class Hybrid_A_star:
                 flag, path = self.analytic_expansion(current_node)
                 if flag:
                     break
+                else:
+                    path = None
             else:
                 path = None
             successor = current_node.create_successor()  # need consider direction
@@ -74,18 +76,26 @@ class Hybrid_A_star:
 
     def analytic_expansion(self, node):
         curvature = 1 / R
-        px, py, ptheta, mode, length = rs.reeds_shepp_path_planning(node.x, node.y, node.theta,
-                                                                    self.goal.x, self.goal.y, self.goal.theta,
-                                                                    curvature)
+        if REVERSE is True:
+            px, py, ptheta, mode, length = rs.reeds_shepp_path_planning(node.x, node.y, node.theta,
+                                                                        self.goal.x, self.goal.y, self.goal.theta,
+                                                                        curvature)
+        else:
+            px, py, ptheta, mode, length = dubins.dubins_path_planning(node.x, node.y, node.theta,
+                                                                       self.goal.x, self.goal.y, self.goal.theta,
+                                                                       curvature)
         flag = True
         for x, y in zip(px, py):
-            index_2D = self.grid_map.get_index(x, y)
-            if self.grid_map.grid_map[index_2D] == 1:
-                flag = False
-                break
+            if Node_2D.is_in_map(Node_2D(x, y), self.map):
+                index_2D = self.grid_map.get_index(x, y)
+                if self.grid_map.grid_map[index_2D] == 1:
+                    flag = False
+                    break
+                else:
+                    flag = True
             else:
-                flag = True
-        path = [px, py, ptheta]
+                flag = False
+        path = [px.tolist(), py.tolist(), ptheta]
         return flag, path
 
     def update_heuristics(self, node):

@@ -17,7 +17,7 @@ Weight_obstacle = 0.25
 Weight_curvature = 0.25
 Weight_smoothness = 0.25
 Weight_voronoi = 0.25
-Curvature_max = 0.1
+Curvature_max = 0.1515
 
 
 class Path_smoother:
@@ -28,10 +28,15 @@ class Path_smoother:
         self.max_iterations = max_iteration
         self.gradient_descent()
 
+    # todo need add conjugate gradient
     def gradient_descent(self):
         alpha = 0.1
         iteration = 0
-        total_weight = Weight_obstacle  # + Weight_curvature + Weight_smoothness  # +Weight_voronoi
+        # total_weight = Weight_obstacle  # + Weight_curvature + Weight_smoothness  # +Weight_voronoi
+        total_weight = Weight_curvature
+        # total_weight = Weight_smoothness  # +Weight_voronoi
+        # total_weight = Weight_obstacle  + Weight_smoothness  # +Weight_voronoi
+        # total_weight =Weight_voronoi
         path = copy.deepcopy(self.path)
         smooth_path = [self.path, path]
         while iteration < self.max_iterations:
@@ -42,8 +47,8 @@ class Path_smoother:
                 xp1 = np.array([[path[0][i - 2], path[1][i - 2]]])
                 xs = np.array([[path[0][i + 1], path[1][i + 1]]])
                 xs1 = np.array([[path[0][i + 2], path[1][i + 2]]])
-                gradient = gradient - self.obstacle_term(xi)
-                # gradient = gradient - self.curvature_term(xp, xi, xs)
+                # gradient = gradient - self.obstacle_term(xi)
+                gradient = gradient - self.curvature_term(xp, xi, xs)
                 # gradient = gradient - self.smooth_term(xp1,xp,xi,xs,xs1)
                 # gradient=gradient-self.voronoi_term()
                 xi = xi + alpha * gradient / total_weight
@@ -53,7 +58,7 @@ class Path_smoother:
             smooth_path[1] = path
             diff = self.path_different(smooth_path)
             smooth_path[0] = copy.deepcopy(smooth_path[1])
-            if diff<0.1:
+            if diff < 0.01:
                 print(iteration)
                 break
             iteration = iteration + 1
@@ -77,8 +82,9 @@ class Path_smoother:
 
     @staticmethod
     def curvature_term(xp, xi, xs):
-        Dxi = xi - xp
-        Dxs = xs - xi
+        # todo need fix bugs for curvature term
+        Dxi = xi - xp  # delta xi
+        Dxs = xs - xi  # delta x(i+1)
         Dxi_length = np.linalg.norm(Dxi)
         Dxs_length = np.linalg.norm(Dxs)
         if Dxi_length > 0 and Dxs_length > 0:

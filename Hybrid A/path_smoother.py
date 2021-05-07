@@ -26,8 +26,8 @@ class Path_smoother:
         self.map = map
         self.smoothed_path = self.path
         self.max_iterations = max_iteration
-        # self.gradient_descent()
-        self.steepest_gradient()
+        self.gradient_descent()
+        # self.steepest_gradient()
 
     def steepest_gradient(self):
         iteration = 0

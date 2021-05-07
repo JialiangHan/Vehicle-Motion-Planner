@@ -11,7 +11,7 @@ def main():
     # n: number of obstacle
     grid_size = 20
     size = [0, grid_size, 0, grid_size]
-    n = 2
+    n = 1
     # generate map
     map = Map.Map(size, n)
 
@@ -25,9 +25,9 @@ def main():
         hybrid_a_star = Hybrid_A_star(initial, goal, map, grid_resolution[i], angle_resolution)
         hybrid_a_star.run()
         hybrid_a_star.plot_path()
-        path_evaluation(hybrid_a_star.path, hybrid_a_star.map)
-        # smooth = Path_smoother(hybrid_a_star.path, hybrid_a_star.map, max_iterations)
-        # smooth.plot()
+        # path_evaluation(hybrid_a_star.path, hybrid_a_star.map)
+        smooth = Path_smoother(hybrid_a_star.path, hybrid_a_star.map, max_iterations)
+        smooth.plot()
     # path_evaluation(smooth.smoothed_path,map)
     plt.show()
 

@@ -26,7 +26,49 @@ class Path_smoother:
         self.map = map
         self.smoothed_path = self.path
         self.max_iterations = max_iteration
-        self.gradient_descent()
+        # self.gradient_descent()
+        self.steepest_gradient()
+
+    def steepest_gradient(self):
+        iteration = 0
+        total_weight = Weight_obstacle  # + Weight_curvature + Weight_smoothness  # +Weight_voronoi
+        # total_weight = Weight_curvature
+        # total_weight = Weight_smoothness  # +Weight_voronoi
+        # total_weight = Weight_obstacle  + Weight_smoothness  # +Weight_voronoi
+        # total_weight =Weight_voronoi
+        path = copy.deepcopy(self.path)
+        smooth_path = [self.path, path]
+        A = np.array([[Weight_obstacle, Weight_obstacle], [Weight_obstacle, Weight_obstacle]])
+        while iteration < self.max_iterations:
+            for i in range(1, len(path[0]) - 2):
+                gradient = np.array([[0,0]])
+                xi = np.array([[path[0][i], path[1][i]]])
+                xp = np.array([[path[0][i - 1], path[1][i - 1]]])
+                xp1 = np.array([[path[0][i - 2], path[1][i - 2]]])
+                xs = np.array([[path[0][i + 1], path[1][i + 1]]])
+                xs1 = np.array([[path[0][i + 2], path[1][i + 2]]])
+                gradient = gradient - self.obstacle_term(xi)
+                # gradient = gradient - self.curvature_term(xp, xi, xs)
+                # gradient = gradient - self.smooth_term(xp1,xp,xi,xs,xs1)
+                # gradient=gradient-self.voronoi_term()
+                if np.all(gradient == 0):
+                    xi = xi
+                else:
+                    alpha = np.dot(gradient, gradient.T) / np.dot(np.dot(gradient, A), gradient.T)
+                    if np.isnan(alpha):
+                        alpha = 0.1
+                    xi = xi + alpha * gradient / total_weight
+                path[0][i] = xi[0][0]
+                path[1][i] = xi[0][1]
+                path[2][i] = math.atan2(xi[0][1] - xp[0][1], xi[0][0] - xp[0][0])
+            smooth_path[1] = path
+            diff = self.path_different(smooth_path)
+            smooth_path[0] = copy.deepcopy(smooth_path[1])
+            if diff < 0.1:
+                print(iteration)
+                break
+            iteration = iteration + 1
+        self.smoothed_path = path
 
     # todo need add conjugate gradient
     def gradient_descent(self):

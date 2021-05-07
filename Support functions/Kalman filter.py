@@ -7,7 +7,6 @@ copied from below link
 https://zhuanlan.zhihu.com/p/113685503
 """
 
-
 import numpy as np
 
 
@@ -18,7 +17,7 @@ class KalmanFilter(object):
         H: y=Hx+w
         Q: corvariance matrix for process error
         R: covaraince matrix for measurement noise
-        P: covoraince matrix for
+        P: covoraince matrix for state
         x0 : initial state
         """
         if F is None or H is None:
@@ -57,25 +56,40 @@ class KalmanFilter(object):
 
 
 def example():
-    dt = 1.0 / 60
-    F = np.array([[1, dt, 0], [0, 1, dt], [0, 0, 1]])
-    H = np.array([1, 0, 0]).reshape(1, 3)
-    Q = np.array([[0.05, 0.05, 0.0], [0.05, 0.05, 0.0], [0.0, 0.0, 0.0]])
-    R = np.array([1]).reshape(1, 1)
-
+    # """
+    # model x=[position; velocity]
+    # x=F*x+B*u+v
+    # y=H*x+w
+    # y is velocity
+    # w=0,R=[0.5]
+    # H=[0 1 ]
+    # F=[1 dt ;0 1]
+    # B=[0;dt/mass]
+    # u=0 at initial
+    # v=0,Q
+    # P=[1 0;0 2] at intial
+    # """
+    dt = 0.5
+    mass = 1
+    F = np.array([[1, dt], [0, 1]])
+    H = np.array([0, 1]).reshape(1, 2)
+    Q = np.array([[0.2, 0.05], [0.05, 0.1]])
+    R = np.array([0.5]).reshape(1, 1)
+    B = np.array([0, dt / mass]).reshape(2, 1)
     itr = 200
+    u = 0
+    real_state = []
+    x = np.array([2, 4])
+    P = np.array([[1, 0], [0, 2]])
 
     def f(x):
-        return np.dot(F, x) + np.random.normal(0, 5, 3)
-
-    real_state = []
-    x = np.array([0, 0, 0])
+        return np.dot(F, x) + np.dot(B, u) + np.random.multivariate_normal([0, 0], P, 2)
 
     for i in range(itr):
         real_state.append(x[0])
         x = f(x)
 
-    measurements = [x - 1 + np.random.normal(0, 1) for x in real_state]
+    measurements = [x + np.random.normal(0, 0.5) for x in real_state]
 
     kf = KalmanFilter(F=F, H=H, Q=Q, R=R)
     predictions = []
@@ -83,12 +97,12 @@ def example():
         predictions.append(kf.predict()[0])
         kf.update(z)
 
-    import matplotlib.pyplot as plt
-    plt.plot(range(len(measurements)), measurements, label='Measurements')
-    plt.plot(range(len(predictions)), np.array(predictions), label='Kalman Filter Prediction')
-    plt.plot(range(len(real_state)), real_state, label='Real statement')
-    plt.legend()
-    plt.show()
+    # import matplotlib.pyplot as plt
+    # plt.plot(range(len(measurements)), measurements, label='Measurements')
+    # plt.plot(range(len(predictions)), np.array(predictions), label='Kalman Filter Prediction')
+    # plt.plot(range(len(real_state)), real_state, label='Real statement')
+    # plt.legend()
+    # plt.show()
 
 
 if __name__ == '__main__':

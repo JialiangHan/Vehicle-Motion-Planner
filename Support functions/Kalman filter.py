@@ -79,11 +79,11 @@ def example():
     itr = 200
     u = 0
     real_state = []
-    x = np.array([2, 4])
+    x = np.array([2, 4]).reshape(2, 1)
     P = np.array([[1, 0], [0, 2]])
 
     def f(x):
-        return np.dot(F, x) + np.dot(B, u) + np.random.multivariate_normal([0, 0], P, 2)
+        return np.dot(F, x) + np.dot(B, u) #+ np.random.multivariate_normal([0, 0], P, 2)
 
     for i in range(itr):
         real_state.append(x[0])
@@ -97,12 +97,12 @@ def example():
         predictions.append(kf.predict()[0])
         kf.update(z)
 
-    # import matplotlib.pyplot as plt
-    # plt.plot(range(len(measurements)), measurements, label='Measurements')
-    # plt.plot(range(len(predictions)), np.array(predictions), label='Kalman Filter Prediction')
-    # plt.plot(range(len(real_state)), real_state, label='Real statement')
-    # plt.legend()
-    # plt.show()
+    import matplotlib.pyplot as plt
+    plt.plot(range(len(measurements)), measurements, label='Measurements')
+    plt.plot(range(len(predictions)), np.array(predictions), label='Kalman Filter Prediction')
+    plt.plot(range(len(real_state)), real_state, label='Real statement')
+    plt.legend()
+    plt.show()
 
 
 if __name__ == '__main__':

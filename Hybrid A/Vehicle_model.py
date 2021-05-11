@@ -34,7 +34,7 @@ def vehicle_collision_check(x_list, y_list, yaw_list, ox, oy, kd_tree) -> bool:
         vehicle_center_x = x + DISTANCE_REAR_TO_CENTER * math.cos(yaw)
         vehicle_center_y = y + DISTANCE_REAR_TO_CENTER * math.sin(yaw)
         # get all points index within vehicle_radius
-        indices = kd_tree.query_ball_point([vehicle_center_x, vehicle_center_y], VEHICLE_RADIUS *1.1)
+        indices = kd_tree.query_ball_point([vehicle_center_x, vehicle_center_y], VEHICLE_RADIUS * 1.1)
         if not indices:
             continue
         else:
@@ -89,6 +89,7 @@ def plot_car(x, y, yaw):
 
     plt.plot(car_outline_x, car_outline_y, car_color)
     plt.axis('equal')
+
 
 def main():
     x, y, yaw = 0., 1, math.pi / 4

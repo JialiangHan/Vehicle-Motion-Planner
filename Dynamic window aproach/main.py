@@ -1,6 +1,51 @@
 import math
 import matplotlib.pyplot as plt
-import Map
+import os
+import sys
+
+sys.path.append(os.path.dirname(os.path.abspath(__file__))
+                + "/../Support functions")
+
+try:
+    import Map
+    import Node_3D
+    import DWA
+except Exception:
+    raise
+
+
+class Config:
+    """
+    simulation parameter class
+    """
+
+    def __init__(self):
+        # robot parameter
+        self.max_speed = 1.0  # [m/s]
+        self.min_speed = -0.5  # [m/s]
+        self.max_yaw_rate = 40.0 * math.pi / 180.0  # [rad/s]
+        self.max_accel = 0.2  # [m/ss]
+        self.max_delta_yaw_rate = 40.0 * math.pi / 180.0  # [rad/ss]
+        self.v_resolution = 0.01  # [m/s]
+        self.yaw_rate_resolution = 0.1 * math.pi / 180.0  # [rad/s]
+        self.dt = 0.1  # [s] Time tick for motion prediction
+        self.predict_time = 3.0  # [s]
+        self.to_goal_cost_gain = 0.15
+        self.speed_cost_gain = 1.0
+        self.obstacle_cost_gain = 1.0
+        self.robot_stuck_flag_cons = 0.001  # constant to prevent robot stucked
+        self.robot_type = RobotType.circle
+
+        # if robot_type == RobotType.circle
+        # Also used to check if goal is reached in both types
+        self.robot_radius = 1.0  # [m] for collision check
+
+        # if robot_type == RobotType.rectangle
+        self.robot_width = 0.5  # [m] for collision check
+        self.robot_length = 1.2  # [m] for collision check
+
+
+config = Config()
 
 
 def main():
@@ -14,17 +59,10 @@ def main():
 
     initial = Node_3D.Node_3D(size[0], size[2], math.radians(0))
     goal = Node_3D.Node_3D(size[1] - 1, size[1] - 1, math.radians(45))
-    angle_resolution = math.radians(5)
-    max_iterations = 100
-    grid_resolution = [1]
     plt.subplot(221)
-    for i in range(len(grid_resolution)):
-        hybrid_a_star = Hybrid_A_star(initial, goal, map, grid_resolution[i], angle_resolution)
-        hybrid_a_star.run()
-        hybrid_a_star.plot_path()
-        # path_evaluation(hybrid_a_star.path, hybrid_a_star.map)
-        smooth = Path_smoother(hybrid_a_star.path, hybrid_a_star.map, max_iterations)
-        smooth.plot()
+    dwa = DWA.dynamic_window_approach(initial, goal, map, config)
+    dwa.run()
+    dwa.plot_path()
     plt.show()
 
 

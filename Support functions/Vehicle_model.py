@@ -56,6 +56,46 @@ def rectangle_collision_check(x, y, yaw, ox, oy) -> bool:
     return True  # no collision
 
 
+class KinematicModel(object):
+    """
+    this is a kinematic bicycle model
+    x,y are position
+    psi: vehcile yaw angle, or heading
+    f_len: length from front wheel to vehicle center
+    r_len: length from rear wheel to vehicle center
+    """
+
+    def __init__(self, x, y, psi, v, f_len=None, r_len=None):
+        self.x = x
+        self.y = y
+        self.psi = psi
+        self.v = v
+        if f_len is None:
+            self.f_len = DISTANCE_REAR_TO_FRONT - DISTANCE_REAR_TO_CENTER
+        else:
+            self.f_len = f_len
+        if r_len is None:
+            self.r_len = DISTANCE_REAR_TO_CENTER
+        else:
+            self.r_len = r_len
+
+    def get_state(self):
+        return self.x, self.y, self.psi, self.v
+
+    def update_state(self, a, delta, dt):
+        """
+        a: acceleration
+        detla: steering angle
+        """
+        beta = math.atan((self.r_len / (self.r_len + self.f_len)) * math.tan(delta))
+
+        self.x = self.x + self.v * math.cos(self.psi + beta) * dt
+        self.y = self.y + self.v * math.sin(self.psi + beta) * dt
+        self.psi = self.psi + (self.v / self.f_len) * math.sin(beta) * dt
+        self.v = self.v + a * dt
+        return self.x, self.y, self.psi, self.v
+
+
 def move(x: float, y: float, yaw: float, distance: float, steer: float) -> float:
     # here distance=velocity * delta time, for delta time we assume this is a constant
     # unit for angle is all degree, for length, unit are meter

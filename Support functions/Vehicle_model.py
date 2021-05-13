@@ -82,18 +82,30 @@ class KinematicModel(object):
     def get_state(self):
         return self.x, self.y, self.psi, self.v
 
-    def update_state(self, a, delta, dt):
+    def update_state(self, v, delta, dt):
         """
-        a: acceleration
+        v: velocity
         detla: steering angle
         """
         beta = math.atan((self.r_len / (self.r_len + self.f_len)) * math.tan(delta))
 
-        self.x = self.x + self.v * math.cos(self.psi + beta) * dt
-        self.y = self.y + self.v * math.sin(self.psi + beta) * dt
-        self.psi = self.psi + (self.v / self.f_len) * math.sin(beta) * dt
-        self.v = self.v + a * dt
-        return self.x, self.y, self.psi, self.v
+        self.x = self.x + v * math.cos(self.psi + beta) * dt
+        self.y = self.y + v * math.sin(self.psi + beta) * dt
+        self.psi = self.psi + (v / self.f_len) * math.sin(beta) * dt
+        self.v = v
+        return [self.x, self.y, self.psi, self.v,delta]
+    # def update_state(self, a, delta, dt):
+    #     """
+    #     a: acceleration
+    #     detla: steering angle
+    #     """
+    #     beta = math.atan((self.r_len / (self.r_len + self.f_len)) * math.tan(delta))
+    #
+    #     self.x = self.x + self.v * math.cos(self.psi + beta) * dt
+    #     self.y = self.y + self.v * math.sin(self.psi + beta) * dt
+    #     self.psi = self.psi + (self.v / self.f_len) * math.sin(beta) * dt
+    #     self.v = self.v + a * dt
+    #     return self.x, self.y, self.psi, self.v
 
 
 def move(x: float, y: float, yaw: float, distance: float, steer: float) -> float:

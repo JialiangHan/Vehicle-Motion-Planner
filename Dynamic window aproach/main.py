@@ -28,7 +28,7 @@ def main():
 
     initial = Node_3D.Node_3D(size[0], size[2], math.radians(0))
     goal = Node_3D.Node_3D(size[1] - 1, size[1] - 1, math.radians(45))
-    plt.subplot(221)
+    # plt.subplot(221)
     dwa = DWA.dynamic_window_approach(initial, goal, map, config)
     dwa.run()
     dwa.plot_path()

@@ -15,6 +15,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__))
 import Vehicle_model
 import Node_3D, Map, Config
 import distance
+import Node
 
 
 class dynamic_window_approach:
@@ -106,7 +107,7 @@ class dynamic_window_approach:
 
     def to_goal_cost(self, trajectory):
         """
-        calculate angle diff between current pisition and goal
+        calculate angle diff between current position and goal
         """
         angle_diff = self.goal.theta - trajectory[-1, 2]
         cost = abs(math.atan2(math.sin(angle_diff), math.cos(angle_diff)))
@@ -114,15 +115,17 @@ class dynamic_window_approach:
 
     def obs_cost(self, trajectory):
         """
-        calculate obstcale cost, distance to obstacle, inf: collision
+        calculate obstacle cost, distance to obstacle, inf: collision
         """
-        min_dist=float("inf")
+        min_dist = float("inf")
         for node in trajectory:
-            dist = distance.distance_node_to_polygons(Node.Node(node[0],node[1]),self.map.obstacle_list)
-            if dist<min_dist:
-                min_dist=dist
-            #todo need to finish this function
-
+            dist, _ = distance.distance_node_to_polygons(Node.Node(node[0], node[1]), self.map.obstacle_list)
+            if dist <= Vehicle_model.VEHICLE_RADIUS:
+                dist = float("inf")
+                return dist
+            elif dist < min_dist:
+                min_dist = dist
+        return 1 / dist
 
     def velocity_cost(self, trajectory):
         # make vehicle move fast as it can
